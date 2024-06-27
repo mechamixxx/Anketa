@@ -7,39 +7,43 @@ import Basic from '../screens/Basic';
 import Education from '../screens/Education';
 import Family from '../screens/Family';
 import Work from '../screens/Work';
+import { AppProvider } from '../context/AppContext';
 
 const Tab = createMaterialTopTabNavigator();
 
 const Navigation: React.FC = () => {
-    
+
     const [isBasicFilled, setIsBasicFilled] = useState(true);
     const [isEducationFilled, setIsEducationFilled] = useState(true);
     Education
     return (
-        <View style={{paddingTop: 30, flex: 1}}>
-            <View style={{ flex: 1 }}>
-            <Tab.Navigator>
-                    <Tab.Screen 
-                        name="Basic" 
-                        children={() => <Basic setIsBasicFilled={setIsBasicFilled} />}
-                        options={{
-                            tabBarStyle: { backgroundColor: isBasicFilled ? 'white' : 'red' }
-                        }}
-                    />
-                    <Tab.Screen 
-                        name="Education" 
-                        children={() => <Education setIsEducationFilled={setIsEducationFilled} />}
-                        options={{
-                            tabBarStyle: { backgroundColor: isEducationFilled ? 'white' : 'red' }
-                        }}
-                    />
-                    <Tab.Screen name="Work" component={Work} />
-                    <Tab.Screen name="Family" component={Family} />
-                    <Tab.Screen name="About" component={About} />   
-                </Tab.Navigator>
+        <AppProvider>
+            <View style={{ paddingTop: 30, flex: 1 }}>
+                <View style={{ flex: 1 }}>
+                    <Tab.Navigator>
+                        <Tab.Screen
+                            name="Basic"
+                            children={() => <Basic setIsBasicFilled={setIsBasicFilled} />}
+                            options={{
+                                tabBarStyle: { backgroundColor: isBasicFilled ? 'white' : 'red' }
+                            }}
+                        />
+                        <Tab.Screen
+                            name="Education"
+                            children={() => <Education setIsEducationFilled={setIsEducationFilled} />}
+                            options={{
+                                tabBarStyle: { backgroundColor: isEducationFilled ? 'white' : 'red' }
+                            }}
+                        />
+                        <Tab.Screen name="Work" component={Work} />
+                        <Tab.Screen name="Family" component={Family} />
+                        <Tab.Screen name="About" component={About} />
+                    </Tab.Navigator>
+                </View>
             </View>
-        </View>
+        </AppProvider>
+
     );
-  };
+};
 
 export default Navigation;

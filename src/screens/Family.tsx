@@ -1,5 +1,21 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
+import { AppContext } from '../context/AppContext';
+
+
+interface Family {
+  family_status: string;
+  relatives: Relative[];
+}
+interface Relative {
+  id: number;
+  relation_degree: string;
+  name: string;
+  birth_data: string;
+  place_of_work: string;
+  address: string;
+  user_id: number;
+}
 
 type Member = {
   col1?: string;
@@ -10,25 +26,32 @@ type Member = {
 };
 
 type Answers = {
-  first?: IMember[];
+  first?: Relative[];
   second?: string;
 };
 
-type IMember = {
-  step: string;
+/*type IMember = {
+  relation_degree : string;
   name: string;
-  dateOfBirth: string;
-  placeWork: string;
-  address: string;
+  birth_data : string;
+  place_of_work : string;
+  address : string;
 };
-
-type IMembers = IMember[];
+type IMembers = IMember[];*/
 
 const Family = () => {
-  const [newRow, setNewRow] = useState<IMember>({ step: '', name: '', dateOfBirth: '', placeWork: '', address: '' });
-  const [familyStatus, setFamilyStatus] = useState('');
-  const [members, setMembers] = useState<IMembers>([]);
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('AppContext not found');
+  }
+  const { members, setMembers, family_status, setfamily_status, FamilyResult, setFamilyResult } = context!;
 
+  const [newRow, setNewRow] = useState<Relative>({id:0,user_id:0, relation_degree: '', name: '', birth_data: '', place_of_work: '', address: '' });
+  /*const [familyStatus, setFamilyStatus] = useState('');
+  const [members, setMembers] = useState<IMembers>([]);*/
+  useEffect(() => {
+    setFamilyResult({family_status:family_status,relatives:members});
+  }, [members,family_status])
   const handleInputChange = (key: string, value: string) => {
     setNewRow(prevRow => ({
       ...prevRow,
@@ -36,7 +59,7 @@ const Family = () => {
     }));
   };
 
-  const convertToIMembers = (data: Member[]): IMembers => {
+  /*const convertToIMembers = (data: Member[]): IMembers => {
     return data.map(item => ({
       step: item.col1 || '',
       name: item.col2 || '',
@@ -44,22 +67,24 @@ const Family = () => {
       placeWork: item.col4 || '',
       address: item.col5 || '',
     }));
-  };
+  };*/
 
   const addRow = () => {
     setMembers(prevMembers => [...prevMembers, newRow]);
-    setNewRow({ step: '', name: '', dateOfBirth: '', placeWork: '', address: '' });
+    setNewRow({id:0,user_id:0, relation_degree: '', name: '', birth_data: '', place_of_work: '', address: '' });
+
   };
 
   const removeRow = () => {
     setMembers(prevMembers => prevMembers.slice(0, -1));
+    
   };
 
   const showData = () => {
-    console.log(familyStatus);
-    console.log(members);
+    console.log(FamilyResult);
   };
 
+  
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Семья</Text>
@@ -75,10 +100,10 @@ const Family = () => {
           </View>
           {members.map((row, index) => (
             <View key={index} style={styles.tableRow}>
-              <Text style={styles.tableCell}>{row.step}</Text>
+              <Text style={styles.tableCell}>{row.relation_degree}</Text>
               <Text style={styles.tableCell}>{row.name}</Text>
-              <Text style={styles.tableCell}>{row.dateOfBirth}</Text>
-              <Text style={styles.tableCell}>{row.placeWork}</Text>
+              <Text style={styles.tableCell}>{row.birth_data}</Text>
+              <Text style={styles.tableCell}>{row.place_of_work}</Text>
               <Text style={styles.tableCell}>{row.address}</Text>
             </View>
           ))}
@@ -87,8 +112,8 @@ const Family = () => {
           <TextInput
             style={styles.input}
             placeholder="Степень родства"
-            value={newRow.step}
-            onChangeText={text => handleInputChange('step', text)}
+            value={newRow.relation_degree}
+            onChangeText={text => handleInputChange('relation_degree', text)}
           />
           <TextInput
             style={styles.input}
@@ -99,14 +124,14 @@ const Family = () => {
           <TextInput
             style={styles.input}
             placeholder="Дата рождения"
-            value={newRow.dateOfBirth}
-            onChangeText={text => handleInputChange('dateOfBirth', text)}
+            value={newRow.birth_data}
+            onChangeText={text => handleInputChange('birth_data', text)}
           />
           <TextInput
             style={styles.input}
             placeholder="Место работы, должность"
-            value={newRow.placeWork}
-            onChangeText={text => handleInputChange('placeWork', text)}
+            value={newRow.place_of_work}
+            onChangeText={text => handleInputChange('place_of_work', text)}
           />
           <TextInput
             style={styles.input}
@@ -126,13 +151,13 @@ const Family = () => {
         <Text style={styles.questionText}>Семейное положение на момент заполнения личного листка:</Text>
         <TextInput
           style={styles.input}
-          value={familyStatus}
-          onChangeText={setFamilyStatus}
+          value={family_status}
+          onChangeText={setfamily_status}
         />
       </View>
       <View style={styles.buttonContainer}>
-        <Button title="Показать данные" onPress={showData} />
-      </View>
+          <Button title="asd" onPress={showData} />
+        </View>
     </ScrollView>
   );
 };

@@ -1,30 +1,193 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, ScrollView, StyleSheet } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { View, Text, TextInput, Button, ScrollView, StyleSheet, Touchable } from 'react-native';
+import { AppContext } from '../context/AppContext';
+import axios from 'axios';
 
-type IVisit = {
-  departureDate?: string;
-  arrivalDate?: string;
+
+type StayAbroad = {
+  id?: number;
+  date_of_start?: string;
+  date_of_end?: string;
   country?: string;
-  purpose?: string;
+  goal?: string;
+  user_id?: number;
 };
 
-type IVisits = IVisit[];
+type IVisits = StayAbroad[];
 
 type Answers = {
   first?: string;
   second?: string;
   third?: string;
-  fourth?: IVisits;
+  fourth?: StayAbroad[];
   fifth?: string;
   sixth?: string;
   seventh?: string;
 };
 
 type VisitProps = {
-  visit: IVisit;
-  onChange: (field: keyof IVisit, value: string) => void;
+  visit: StayAbroad;
+  onChange: (field: keyof StayAbroad, value: string) => void;
   onRemove: () => void;
 };
+interface Passport {
+  id?: number;
+  series: number;
+  number: number;
+  issued_by: string;
+  date_of_issue: string;
+  user_id?: number;
+}
+
+interface MilitaryId {
+  id?: number;
+  status: string;
+  rank: string;
+  series: number;
+  number: number;
+  issued_by: string;
+  date_of_issue: string;
+  user_id?: number;
+}
+
+interface Address {
+  id?: number;
+  passport_address: string;
+  fact_address: string;
+  passport_index: number;
+  fact_index: number;
+  user_id?: number;
+}
+
+interface EducationDetail {
+  id?: number,
+  education_type: string,
+  name: string,
+  number: string,
+  degree: string,
+  date_of_end: string,
+  speciality: string,
+  user_id?: number
+}
+interface PostEducationDetail {
+  id?: number,
+  education_type: string,
+  name: string,
+  number: string,
+  speciality: string,
+  user_id?: number
+}
+interface SkillsUpgrades {
+  id?: number,
+  speciality: string,
+  name: string,
+  date_of_end: string,
+  user_id?: number,
+}
+
+interface WorkExperienceDetail {
+  id?: number;
+  name: string;
+  position: string;
+  date_of_start: string;
+  date_of_end: string;
+  user_id?: number;
+}
+
+interface Recommendation {
+  id?: number;
+  name: string;
+  place_of_work: string;
+  position: string;
+  phone_number: string;
+  user_id?: number;
+}
+
+interface Relative {
+  id: number;
+  relation_degree: string;
+  name: string;
+  birth_data: string;
+  place_of_work: string;
+  address: string;
+  user_id: number;
+}
+
+/*interface StayAbroad {
+  id: number;
+  date_of_start: string;
+  date_of_end: string;
+  country: string;
+  goal: string;
+  user_id: number;
+}*/
+
+interface Form {
+  name: string;
+  surname: string;
+  middle_name: string;
+  sex: string;
+  birthday: string;
+  place_of_birth: string;
+  citizenship: string;
+  passport: Passport;
+  snils: string;
+  inn: string;
+  phone_number: string;
+  home_phone_number: string;
+  email: string;
+  military_id: MilitaryId;
+  address: Address;
+  drivers_license: string;
+}
+
+interface Education {
+  academic_degree: string;
+  diplom: string;
+  academic_tile: string;
+  languages: string;
+  educations: EducationDetail[];
+  post_educations: PostEducationDetail[];
+  skill_upgrades: SkillsUpgrades[];
+}
+
+interface WorkExperience {
+  works_experience: WorkExperienceDetail[];
+  old_achievements: string;
+  knowledge_for_work: string;
+  recommendations: Recommendation[];
+  hr_data: string;
+  first_24: number;
+  second_24: number;
+}
+
+interface Family {
+  family_status: string;
+  relatives: Relative[];
+}
+
+interface Info {
+  ad_disad?: string;
+  government_awards?: string;
+  stays_abroad?: StayAbroad[];
+  criminal_liabilities?: string;
+  pc_experience?: string;
+  additional_information?: string;
+  date_of_completion?: string;
+  hobbies?: string;
+}
+
+interface UserData {
+  form: Form;
+  education: Education;
+  work_experience: WorkExperience;
+  family: Family;
+  info: Info;
+}
+
+
+
+// Создание константы userData
 
 const VisitItem: React.FC<VisitProps> = ({ visit, onChange, onRemove }) => {
   return (
@@ -32,14 +195,14 @@ const VisitItem: React.FC<VisitProps> = ({ visit, onChange, onRemove }) => {
       <TextInput
         style={styles.input}
         placeholder="Дата отправления"
-        value={visit.departureDate}
-        onChangeText={(text) => onChange('departureDate', text)}
+        value={visit.date_of_start}
+        onChangeText={(text) => onChange('date_of_start', text)}
       />
       <TextInput
         style={styles.input}
         placeholder="Дата прибытия"
-        value={visit.arrivalDate}
-        onChangeText={(text) => onChange('arrivalDate', text)}
+        value={visit.date_of_end}
+        onChangeText={(text) => onChange('date_of_end', text)}
       />
       <TextInput
         style={styles.input}
@@ -50,8 +213,8 @@ const VisitItem: React.FC<VisitProps> = ({ visit, onChange, onRemove }) => {
       <TextInput
         style={styles.input}
         placeholder="Цель поездки"
-        value={visit.purpose}
-        onChangeText={(text) => onChange('purpose', text)}
+        value={visit.goal}
+        onChangeText={(text) => onChange('goal', text)}
       />
       <Button title="Удалить" onPress={onRemove} />
     </View>
@@ -59,8 +222,24 @@ const VisitItem: React.FC<VisitProps> = ({ visit, onChange, onRemove }) => {
 };
 
 const About = () => {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('AppContext not found');
+  }
+  const { family_status, members, table1Data, table2Data, FamilyResult, WorkResult, EducationResult,BasicResult} = context!;
   const [answers, setAnswers] = useState<Answers>({});
-  const [visits, setVisits] = useState<IVisits>([]);
+  /*const [visits, setVisits] = useState<IVisits>([]);*/
+
+  const InfoResult: Info = {
+    ad_disad: answers.first,
+    government_awards: answers.third,
+    stays_abroad: answers.fourth,
+    criminal_liabilities: answers.fifth,
+    pc_experience: answers.sixth,
+    additional_information: answers.seventh,
+    date_of_completion: "01.01.2002",
+    hobbies: answers.second,
+  }
 
   const handleInputChange = (question: string, value: string) => {
     setAnswers((prevAnswers) => ({
@@ -69,7 +248,7 @@ const About = () => {
     }));
   };
 
-  const handleAbroadStayChange = (index: number, field: keyof IVisit, value: string) => {
+  const handleAbroadStayChange = (index: number, field: keyof StayAbroad, value: string) => {
     const newListAnsw = answers.fourth ? [...answers.fourth] : [];
     newListAnsw[index] = { ...newListAnsw[index], [field]: value };
     setAnswers((prevAnswers) => ({
@@ -81,7 +260,7 @@ const About = () => {
   const addAbroadStay = () => {
     setAnswers((prevAnswers) => ({
       ...prevAnswers,
-      fourth: [...(prevAnswers.fourth || []), { departureDate: '', arrivalDate: '', country: '', purpose: '' }],
+      fourth: [...(prevAnswers.fourth || []), { id: 0, departureDate: '', arrivalDate: '', country: '', purpose: '', user_id: 0 }],
     }));
   };
 
@@ -94,10 +273,23 @@ const About = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log(answers);
+  const sendUserData = async (userData) => {
+    try {
+      const response = await axios.post('http://85.193.86.4:777/users', userData);
+      
+      console.log('Response:', response.data.family);
+      alert('Данные успешно отправлены!');
+    } catch (error) {
+      console.error('Error sending user data:', error);
+    }
   };
-
+  const userData: UserData = {
+    form: BasicResult,
+    education: EducationResult,
+    work_experience: WorkResult,
+    family: FamilyResult,
+    info: InfoResult
+  };
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>О себе</Text>
@@ -127,7 +319,7 @@ const About = () => {
       </View>
 
       <View style={styles.questionContainer}>
-        <Text style={styles.title}>Пребывание за границей</Text>
+        <Text style={styles.questionText}>Пребывание за границей</Text>
         {(answers.fourth || []).map((visit, index) => (
           <VisitItem
             key={index}
@@ -162,8 +354,7 @@ const About = () => {
           onChangeText={(text) => handleInputChange('seventh', text)}
         />
       </View>
-
-      <Button title="Отправить" onPress={handleSubmit} />
+      <Button title="Добавить поездку" onPress={() => sendUserData(userData)} />
     </ScrollView>
   );
 };
@@ -198,3 +389,7 @@ const styles = StyleSheet.create({
 });
 
 export default About;
+
+function alert(arg0: string) {
+  throw new Error('Function not implemented.');
+}
